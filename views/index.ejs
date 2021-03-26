@@ -1,0 +1,14 @@
+<%- include('head') %>
+
+<body>
+  <%=content%>
+  <div id="app">
+    {{message}}
+    <div>
+      <el-link v-for="item in menus" target="_blank">
+        {{item.name}}
+      </el-link>
+    </div>
+  </div>
+</body>
+<%- include('footer') %>
