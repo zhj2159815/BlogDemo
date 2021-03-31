@@ -29,7 +29,11 @@ const blog = new mongoose.Schema({
 
 blog.static({
     list: function (callback) {
-        this.find({}, null, { sort: { _id: -1 } }, callback)
+        this.find({}, null, {
+            sort: {
+                _id: -1
+            }
+        }, callback)
     }
 })
 
