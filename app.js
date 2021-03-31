@@ -37,16 +37,25 @@ app.all('*', function (req, res, next) {
     res.header("Access-Control-Allow-Methods", "PUT,POST,GET,DELETE,OPTIONS");
     res.header("Access-Control-Allow-Credentials", "true");
     res.header("X-Powered-By", ' 3.2.1')
-    //
-    if (!req.session)
-        return res.send('500');
+
     if (req.method === "OPTIONS") res.send(200);/*让options请求快速返回*/
     else next();
 });
 
-app.get('/', routes.index);
-console.log('routes.user:', routes);
+// app.use((err, req, res, next) => {
+//     res.locals.message = err.message;
+//     res.locals.error = err;
+//     res.stauts = (err.status || 500);
+//     next();
+// });
 
+app.get('/', routes.index);
+//blog
+app.get('/blogList', routes.blog.list);
+app.post('/blogRemove', routes.blog.remove);
+app.post('/blogAdd', routes.blog.add);
+app.post('/blogSave', routes.blog.save);
+//user
 app.post('/login', routes.user.login);
 app.post('/register', routes.user.register);
 

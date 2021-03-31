@@ -1,48 +1,46 @@
 var models = require('../model');
+var crypto = require('../util/cryptolib.js');
+var CFG = require('../config');
+
 
 exports.login = (req, res, next) => {
-    // mongoose.connect('mongodb://localhost/test');
-    // var User = mongoose.model('User', { name: String, psw: String });    
-    models.User.findOne({
-        user: req.body.params.name,
-        psw: req.body.params.psw
-    }, (error, user) => {
-        if (error || !user)
-            return res.json({ message: 'name or psw error!', statusText: 'error' });
-        res.session = user;        
-        res.json({ message: 'login success !', statusText: 'ok' });
+    models.User.count({
+        name: req.body.params.name,
+        psw: crypto.genSign(req.body.params.psw, CFG.key, CFG.iv)
+    }, (error, count) => {
+        if (error || !count)
+            return res.status().json({ status: 500, message: 'name or psw error!', statusText: 'error' });
+
+        res.json({ status: 200, message: 'login success !', statusText: 'ok' });
     });
 };
 
-/*
- * GET logout route.
- */
-
 exports.register = (req, res, next) => {
-    if (!(req.body.params.name && req.body.params.psw && req.body.params.surePsw)) {
+    if (!(req.body.params.name && req.body.params.psw && req.body.params.surePsw))
         return res.json({ status: 500, message: 'Plase input name or psw!' });
-    }
-    if (req.body.params.psw != req.body.params.surePsw) {
-        return res.json({ status: 500, message: 'Please make sure your passwords are consistent!' });
-    }
 
-    models.User.findOne({
-        user: req.body.params.name
-    }, (error, user) => {
+    if (req.body.params.psw != req.body.params.surePsw)
+        return res.json({ status: 500, message: 'Please make sure your passwords are consistent!' });
+
+    models.User.count({
+        name: req.body.params.name
+    }, (error, count) => {
         if (error)
-            return res.json({ message: 'Find account error!', status: 500, statusText: 'error' });
-        if (user)
-            return res.json({ message: 'The account name has been registered!', status: 500, statusText: 'error' });
+            return res.json({ status: 500, message: 'Find account error!', status: 500, statusText: 'error' });
+
+        if (count > 0)
+            return res.json({ status: 500, message: 'The account name has been registered!' });
 
         models.User.create({
             name: req.body.params.name,
-            psw: req.body.params.psw
-        }, (error, data) => {
-            if (error)
-                return res.json({ message: 'add account error!', status: 500, statusText: 'error' });
-
-            res.json({ message: 'register success', status: 200, statusText: 'ok' });
+            psw: crypto.genSign(req.body.params.psw, CFG.key, CFG.iv)
+        }, (error, user) => {
+            if (error) {
+                return res.json({ status: 500, message: 'add account error!', status: 500, statusText: 'error' });
+            }
+            res.json({ status: 200, message: 'register success', data: user, statusText: 'ok' });
         });
     });
-}
+};
+
 
